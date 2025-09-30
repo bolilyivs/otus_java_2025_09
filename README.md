@@ -1,2 +1,4 @@
-# otus_java_2025_09
-otus_java_2025_09
+# otus java 2025_09
+
+Студент:
+Vladislav Bolilyi (Владислав Болилый)
