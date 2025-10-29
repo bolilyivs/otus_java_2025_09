@@ -9,7 +9,8 @@ public class Main {
     private static final String[] TEST_CLASS_NAMES = {
         "ru.otus.testframework.test.TestCase1",
         "ru.otus.testframework.test.TestCase2",
-        "ru.otus.testframework.test.TestCase3"
+        "ru.otus.testframework.test.TestCase3",
+        "ru.otus.testframework.test.TestCase4"
     };
 
     public static void main(String[] args) {

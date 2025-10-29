@@ -41,7 +41,7 @@ public class TestRunner {
                 .filter(Objects::nonNull)
                 .toList();
         if (!beforeExceptions.isEmpty()) {
-            log.error("Before test errors: {}", beforeMethods);
+            return new TestRunnerException(String.format("Before test errors: %s", beforeExceptions));
         }
 
         Exception exception = runMethod(testMethod, testObject);
@@ -51,7 +51,7 @@ public class TestRunner {
                 .filter(Objects::nonNull)
                 .toList();
         if (!afterExceptions.isEmpty()) {
-            log.error("After test errors: {}", afterExceptions);
+            return new TestRunnerException(String.format("After test errors: %s", afterExceptions));
         }
 
         return exception;
@@ -78,6 +78,12 @@ public class TestRunner {
                             .filter(Objects::nonNull)
                             .map(Exception::getLocalizedMessage)
                             .toList());
+        }
+    }
+
+    public static class TestRunnerException extends RuntimeException {
+        public TestRunnerException(String msg) {
+            super(msg);
         }
     }
 }
