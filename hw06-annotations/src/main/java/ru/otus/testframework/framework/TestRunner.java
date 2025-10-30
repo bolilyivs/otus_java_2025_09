@@ -36,25 +36,28 @@ public class TestRunner {
             Class<?> testClass, Method testMethod, List<Method> beforeMethods, List<Method> afterMethods) {
         Object testObject = ReflectionHelper.newInstance(testClass);
 
-        List<Exception> beforeExceptions = beforeMethods.stream()
-                .map(method -> runMethod(method, testObject))
-                .filter(Objects::nonNull)
-                .toList();
-        if (!beforeExceptions.isEmpty()) {
-            return new TestRunnerException(String.format("Before test errors: %s", beforeExceptions));
+        Exception exception = combineException(runMethods(beforeMethods, testObject), "Before test errors");
+
+        if (Objects.isNull(exception)) {
+            exception = runMethod(testMethod, testObject);
         }
 
-        Exception exception = runMethod(testMethod, testObject);
-
-        List<Exception> afterExceptions = afterMethods.stream()
-                .map(method -> runMethod(method, testObject))
-                .filter(Objects::nonNull)
-                .toList();
-        if (!afterExceptions.isEmpty()) {
-            return new TestRunnerException(String.format("After test errors: %s", afterExceptions));
-        }
-
+        logExceptions(runMethods(afterMethods, testObject), "After test errors");
         return exception;
+    }
+
+    private static List<Exception> runMethods(List<Method> methods, Object testObject) {
+        return methods.stream()
+                .map(method -> runMethod(method, testObject))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private static Exception combineException(List<Exception> exceptions, String msg) {
+        if (exceptions.isEmpty()) {
+            return null;
+        }
+        return new TestRunnerException(String.format("%s: %s", msg, exceptions));
     }
 
     private static Exception runMethod(Method method, Object object) {
@@ -63,6 +66,12 @@ public class TestRunner {
             return null;
         } catch (Exception e) {
             return e;
+        }
+    }
+
+    private static void logExceptions(List<Exception> exceptions, String msg) {
+        if (!exceptions.isEmpty()) {
+            log.error("{}: {}", msg, exceptions);
         }
     }
 
