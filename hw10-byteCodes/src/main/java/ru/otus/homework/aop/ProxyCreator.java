@@ -26,23 +26,36 @@ public class ProxyCreator {
     static class ProxyHandler<T> implements InvocationHandler {
 
         private final T original;
+        private final List<MethodSignature> annotatedLogMethods;
 
         public ProxyHandler(T original) {
             this.original = original;
+            this.annotatedLogMethods = findAnnotatedMethodSignature(this.original, Log.class);
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (log.isInfoEnabled() && isAnnotationPresent(method, Log.class)) {
+            if (log.isInfoEnabled() && isAnnotatedMethod(method, annotatedLogMethods)) {
                 log.info("executed method: {}, param: {}", method.getName(), Arrays.toString(args));
             }
             return method.invoke(original, args);
         }
 
-        private boolean isAnnotationPresent(Method method, Class<? extends Annotation> annotatinClass) {
+        private boolean isAnnotatedMethod(Method method, List<MethodSignature> annotatedMethods) {
+            MethodSignature methodSignature = MethodUtils.createMethodSignature(method);
+            return annotatedMethods.contains(methodSignature);
+        }
+
+        private List<MethodSignature> findAnnotatedMethodSignature(
+                T original, Class<? extends Annotation> annotationClass) {
+            List<Method> methods = findAnnotatedMethods(original, annotationClass);
+            return methods.stream().map(MethodUtils::createMethodSignature).toList();
+        }
+
+        private List<Method> findAnnotatedMethods(T original, Class<? extends Annotation> annotationClass) {
             return Arrays.stream(original.getClass().getMethods())
-                    .anyMatch(origMethod -> origMethod.isAnnotationPresent(annotatinClass)
-                            && MethodUtils.areMethodsEqual(origMethod, method));
+                    .filter(origMethod -> origMethod.isAnnotationPresent(annotationClass))
+                    .toList();
         }
     }
 }
