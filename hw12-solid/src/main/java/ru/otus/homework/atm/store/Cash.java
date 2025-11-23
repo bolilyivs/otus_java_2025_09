@@ -14,7 +14,7 @@ public record Cash(Banknote banknote, long amount) {
 
     @Override
     public String toString() {
-        return String.format("Cash: [%s x %s (%s)]", banknote(), amount(), getSum());
+        return String.format("Cash: [%s x %s = %s]", banknote(), amount(), getSum());
     }
 
     public static Cash of(long denomination, long amount) {

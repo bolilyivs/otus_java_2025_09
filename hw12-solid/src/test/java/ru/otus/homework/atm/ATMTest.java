@@ -3,9 +3,9 @@ package ru.otus.homework.atm;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import ru.otus.homework.atm.factory.ATMFactory;
-import ru.otus.homework.atm.store.Balance;
 import ru.otus.homework.atm.store.Banknote;
 import ru.otus.homework.atm.store.Cash;
+import ru.otus.homework.atm.store.balance.Balance;
 
 class ATMTest {
 

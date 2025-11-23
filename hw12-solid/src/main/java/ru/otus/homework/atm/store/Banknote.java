@@ -13,6 +13,6 @@ public record Banknote(long denomination) {
 
     @Override
     public String toString() {
-        return String.valueOf(denomination);
+        return String.format("%s₽", denomination);
     }
 }

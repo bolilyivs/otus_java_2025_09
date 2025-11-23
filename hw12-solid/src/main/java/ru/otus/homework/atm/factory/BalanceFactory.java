@@ -1,13 +1,14 @@
 package ru.otus.homework.atm.factory;
 
 import java.util.HashMap;
-import ru.otus.homework.atm.store.Balance;
-import ru.otus.homework.atm.store.BalanceImpl;
+import lombok.experimental.UtilityClass;
+import ru.otus.homework.atm.store.balance.BalanceImpl;
+import ru.otus.homework.atm.store.balance.ControlledBalance;
 
+@UtilityClass
 public class BalanceFactory {
-    private BalanceFactory() {}
 
-    public static Balance createBalance() {
+    public static ControlledBalance createBalance() {
         return new BalanceImpl(new HashMap<>());
     }
 }

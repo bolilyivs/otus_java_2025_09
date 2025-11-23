@@ -3,12 +3,14 @@ package ru.otus.homework.atm.store;
 import java.util.HashMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import ru.otus.homework.atm.store.balance.BalanceImpl;
+import ru.otus.homework.atm.store.balance.ControlledBalance;
 
 class BalanceTest {
 
     @Test
     void addCash() {
-        Balance balance = new BalanceImpl(new HashMap<>());
+        ControlledBalance balance = new BalanceImpl(new HashMap<>());
         balance.addCash(Cash.of(1000, 10));
         balance.addCash(Cash.of(100, 5));
 
@@ -18,7 +20,7 @@ class BalanceTest {
 
     @Test
     void subCash() {
-        Balance balance = new BalanceImpl(new HashMap<>());
+        ControlledBalance balance = new BalanceImpl(new HashMap<>());
         balance.addCash(Cash.of(1000, 10));
         balance.subCash(Cash.of(1000, 3));
         balance.subCash(Cash.of(1000, 2));
@@ -28,7 +30,7 @@ class BalanceTest {
 
     @Test
     void getSum() {
-        Balance balance = new BalanceImpl(new HashMap<>());
+        ControlledBalance balance = new BalanceImpl(new HashMap<>());
         balance.addCash(Cash.of(1_000, 10));
         balance.addCash(Cash.of(100, 3));
 
@@ -37,7 +39,7 @@ class BalanceTest {
 
     @Test
     void getMaxBanknoteCashUpTo() {
-        Balance balance = new BalanceImpl(new HashMap<>());
+        ControlledBalance balance = new BalanceImpl(new HashMap<>());
         balance.addCash(Cash.of(5_000, 5));
         balance.addCash(Cash.of(1_000, 10));
         balance.addCash(Cash.of(100, 3));
@@ -49,10 +51,10 @@ class BalanceTest {
 
     @Test
     void copy() {
-        Balance balance = new BalanceImpl(new HashMap<>());
+        ControlledBalance balance = new BalanceImpl(new HashMap<>());
         balance.addCash(Cash.of(5_000, 5));
 
-        Balance balance2 = balance.copy();
+        ControlledBalance balance2 = (ControlledBalance) balance.copy();
         balance2.addCash(Cash.of(1_000, 4));
 
         Assertions.assertEquals(5_000 * 5, balance.getSum());

@@ -3,14 +3,15 @@ package ru.otus.homework.atm;
 import java.util.HashMap;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import ru.otus.homework.atm.store.Balance;
-import ru.otus.homework.atm.store.BalanceImpl;
 import ru.otus.homework.atm.store.Cash;
+import ru.otus.homework.atm.store.balance.Balance;
+import ru.otus.homework.atm.store.balance.BalanceImpl;
+import ru.otus.homework.atm.store.balance.ControlledBalance;
 
 @RequiredArgsConstructor
 public class ATMImpl implements ATM {
 
-    private final Balance bankBalance;
+    private final ControlledBalance bankBalance;
 
     @Override
     public void addMoney(Cash cash) {
@@ -23,21 +24,24 @@ public class ATMImpl implements ATM {
             throw new IllegalArgumentException("Недостаточно сердств!");
         }
 
-        Balance userBalance = new BalanceImpl(new HashMap<>());
+        ControlledBalance userBalance = new BalanceImpl(new HashMap<>());
+        exchange(bankBalance, userBalance, sum);
 
+        return userBalance;
+    }
+
+    private void exchange(ControlledBalance sourceBalance, ControlledBalance targetBalance, long sum) {
         while (sum > 0) {
-            Cash cash = bankBalance.getMaxBanknoteCashUpTo(sum);
+            Cash cash = sourceBalance.getMaxBanknoteCashUpTo(sum);
             if (Objects.isNull(cash)) {
                 throw new IllegalArgumentException("Нет нужной банкноты!");
             }
             Cash subCash = Cash.of(cash.getDenomination(), Math.min(sum / cash.getDenomination(), cash.amount()));
 
-            bankBalance.subCash(subCash);
-            userBalance.addCash(subCash);
+            sourceBalance.subCash(subCash);
+            targetBalance.addCash(subCash);
             sum -= subCash.getSum();
         }
-
-        return userBalance;
     }
 
     @Override

@@ -1,11 +1,13 @@
-package ru.otus.homework.atm.store;
+package ru.otus.homework.atm.store.balance;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import ru.otus.homework.atm.store.Banknote;
+import ru.otus.homework.atm.store.Cash;
 
 @RequiredArgsConstructor
-public class BalanceImpl implements Balance {
+public class BalanceImpl implements ControlledBalance {
     private final Map<Banknote, Cash> cashMap;
 
     @Override
@@ -47,15 +49,17 @@ public class BalanceImpl implements Balance {
                 .orElse(null);
     }
 
+    @Override
     public String toString() {
         String bodyMsg = cashMap.values().stream()
                 .sorted(Comparator.comparing(Cash::getDenomination))
                 .map(Record::toString)
                 .collect(Collectors.joining(";\n"));
 
-        return String.format("Balance: %s %n %s", getSum(), bodyMsg);
+        return String.format("Balance: %s%n%s", getSum(), bodyMsg);
     }
 
+    @Override
     public Balance copy() {
         return new BalanceImpl(new HashMap<>(cashMap));
     }
