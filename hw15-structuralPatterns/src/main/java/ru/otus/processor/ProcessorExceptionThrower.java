@@ -1,14 +1,19 @@
 package ru.otus.processor;
 
-import java.time.LocalDateTime;
 import ru.otus.model.Message;
+import ru.otus.processor.provider.DateTimeProvider;
 
 public class ProcessorExceptionThrower implements Processor {
 
+    private final DateTimeProvider dateTimeProvider;
+
+    public ProcessorExceptionThrower(DateTimeProvider dateTimeProvider) {
+        this.dateTimeProvider = dateTimeProvider;
+    }
+
     @Override
     public Message process(Message message) {
-
-        if (LocalDateTime.now().getSecond() % 2 == 0) {
+        if (dateTimeProvider.getDate().getSecond() % 2 == 0) {
             throw new IllegalStateException("Чётная секунда!");
         }
 

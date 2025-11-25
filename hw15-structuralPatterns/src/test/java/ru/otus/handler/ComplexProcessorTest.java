@@ -2,11 +2,7 @@ package ru.otus.handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +28,7 @@ class ComplexProcessorTest {
 
         var processors = List.of(processor1, processor2);
 
-        var complexProcessor = new ComplexProcessor(processors, (ex) -> {});
+        var complexProcessor = new ComplexProcessor(processors, ex -> {});
 
         // when
         var result = complexProcessor.handle(message);
@@ -57,7 +53,7 @@ class ComplexProcessorTest {
 
         var processors = List.of(processor1, processor2);
 
-        var complexProcessor = new ComplexProcessor(processors, (ex) -> {
+        var complexProcessor = new ComplexProcessor(processors, ex -> {
             throw new TestException(ex.getMessage());
         });
 
@@ -77,7 +73,7 @@ class ComplexProcessorTest {
 
         var listener = mock(Listener.class);
 
-        var complexProcessor = new ComplexProcessor(new ArrayList<>(), (ex) -> {});
+        var complexProcessor = new ComplexProcessor(new ArrayList<>(), ex -> {});
 
         complexProcessor.addListener(listener);
 
