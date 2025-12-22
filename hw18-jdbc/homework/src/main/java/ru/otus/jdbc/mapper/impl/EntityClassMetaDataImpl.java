@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import ru.otus.jdbc.annotation.Id;
@@ -14,32 +15,51 @@ public class EntityClassMetaDataImpl<T> implements EntityClassMetaData<T> {
 
     private final Class<T> clazz;
 
-    @Override
-    public String getName() {
+    @Getter
+    private final String name;
+
+    @Getter
+    private final Constructor<T> constructor;
+
+    @Getter
+    private final Field idField;
+
+    @Getter
+    private final List<Field> allFields;
+
+    @Getter
+    private final List<Field> fieldsWithoutId;
+
+    public EntityClassMetaDataImpl(Class<T> clazz) {
+        this.clazz = clazz;
+        this.name = initName();
+        this.constructor = initConstructor();
+        this.idField = initIdField();
+        this.allFields = initAllFields();
+        this.fieldsWithoutId = initFieldsWithoutId();
+    }
+
+    private String initName() {
         return clazz.getSimpleName();
     }
 
-    @Override
     @SneakyThrows
-    public Constructor<T> getConstructor() {
+    private Constructor<T> initConstructor() {
         return clazz.getConstructor();
     }
 
-    @Override
-    public Field getIdField() {
+    private Field initIdField() {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Id.class))
                 .findFirst()
                 .orElse(null);
     }
 
-    @Override
-    public List<Field> getAllFields() {
+    private List<Field> initAllFields() {
         return List.of(clazz.getDeclaredFields());
     }
 
-    @Override
-    public List<Field> getFieldsWithoutId() {
+    private List<Field> initFieldsWithoutId() {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> !field.isAnnotationPresent(Id.class))
                 .toList();
