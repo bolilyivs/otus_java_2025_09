@@ -34,7 +34,7 @@ public class EntityReflection<T> {
 
     @SneakyThrows
     public List<Object> unpack(EntityClassMetaData<T> entityClassMetaData, T entity) {
-        return entityClassMetaData.getAllFields().stream()
+        return entityClassMetaData.getFieldsWithoutId().stream()
                 .map(field -> getVar(field, entity))
                 .toList();
     }

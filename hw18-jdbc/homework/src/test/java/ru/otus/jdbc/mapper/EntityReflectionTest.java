@@ -35,6 +35,6 @@ class EntityReflectionTest {
 
         List<Object> values = entityReflection.unpack(entityClassMetaData, client);
         Assertions.assertNotNull(values);
-        Assertions.assertEquals(2, values.size());
+        Assertions.assertEquals(1, values.size());
     }
 }

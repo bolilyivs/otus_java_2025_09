@@ -31,7 +31,9 @@ public class EntitySQLMetaDataImpl implements EntitySQLMetaData {
     public String getInsertSql() {
         String fields = getFieldsSqlPart(entityClassMetaData.getFieldsWithoutId());
         String tableName = entityClassMetaData.getName().toLowerCase();
-        String fieldValues = "?".repeat(entityClassMetaData.getFieldsWithoutId().size());
+        String fieldValues = entityClassMetaData.getFieldsWithoutId().stream()
+                .map(field -> "?")
+                .collect(Collectors.joining(","));
         return "insert into %s(%s) values (%s)".formatted(tableName, fields, fieldValues);
     }
 
