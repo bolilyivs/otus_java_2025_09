@@ -1,13 +1,9 @@
 package ru.otus.crm.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,6 +24,13 @@ public class Client implements Cloneable {
     @Column(name = "name")
     private String name;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Address address;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JoinColumn(name = "client_id", referencedColumnName = "id", updatable = false)
+    private List<Phone> phones;
+
     public Client(String name) {
         this.id = null;
         this.name = name;
@@ -39,13 +42,24 @@ public class Client implements Cloneable {
     }
 
     public Client(Long id, String name, Address address, List<Phone> phones) {
-        throw new UnsupportedOperationException();
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.phones = phones;
+        phones.forEach(phone -> phone.setClient(this));
     }
 
     @Override
     @SuppressWarnings({"java:S2975", "java:S1182"})
     public Client clone() {
-        return new Client(this.id, this.name);
+        Address address = Optional.ofNullable(this.address).map(Address::clone).orElse(null);
+        List<Phone> phones = Optional.ofNullable(this.phones)
+                .map(lPhones -> lPhones.stream().map(Phone::clone).toList())
+                .orElse(new ArrayList<>());
+
+        Client client = new Client(this.id, this.name, address, phones);
+        client.getPhones().forEach(phone -> phone.setClient(client));
+        return client;
     }
 
     @Override
