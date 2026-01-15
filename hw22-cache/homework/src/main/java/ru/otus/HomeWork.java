@@ -1,6 +1,5 @@
 package ru.otus;
 
-import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +18,11 @@ import ru.otus.jdbc.mapper.impl.EntitySQLMetaDataImpl;
 import ru.otus.jdbc.mapper.util.EntityReflection;
 import ru.otus.util.WatchDogUtil;
 
+import javax.sql.DataSource;
+
 @SuppressWarnings({"java:S125", "java:S1481"})
 public class HomeWork {
-    private static final String URL = "jdbc:postgresql://192.168.1.90:5432/demoDB";
+    private static final String URL = "jdbc:postgresql://localhost:5430/demoDB";
     private static final String USER = "usr";
     private static final String PASSWORD = "pwd";
 

@@ -23,7 +23,7 @@ import ru.otus.util.WatchDogUtil;
 
 @SuppressWarnings({"java:S125", "java:S1481"})
 public class HomeWorkWithCache {
-    private static final String URL = "jdbc:postgresql://192.168.1.90:5432/demoDB";
+    private static final String URL = "jdbc:postgresql://localhost:5430/demoDB";
     private static final String USER = "usr";
     private static final String PASSWORD = "pwd";
 
@@ -31,10 +31,10 @@ public class HomeWorkWithCache {
 
     public static void main(String[] args) {
 
-        HwCache<Long, Client> clientHwCache = new MyCache<>();
+        HwCache<String, Client> clientHwCache = new MyCache<>();
         clientHwCache.addListener((key, value, action) -> log.info("Client: {}, {}, {}", key, value, action));
 
-        HwCache<Long, Manager> managerHwCache = new MyCache<>();
+        HwCache<String, Manager> managerHwCache = new MyCache<>();
         managerHwCache.addListener((key, value, action) -> log.info("Manager: {}, {}, {}", key, value, action));
 
         // Общая часть

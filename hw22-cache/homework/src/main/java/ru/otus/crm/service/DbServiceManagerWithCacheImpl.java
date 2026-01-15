@@ -14,12 +14,12 @@ public class DbServiceManagerWithCacheImpl implements DBServiceManager {
 
     private final DataTemplate<Manager> managerDataTemplate;
     private final TransactionRunner transactionRunner;
-    private final HwCache<Long, Manager> hwCache;
+    private final HwCache<String, Manager> hwCache;
 
     public DbServiceManagerWithCacheImpl(
             TransactionRunner transactionRunner,
             DataTemplate<Manager> managerDataTemplate,
-            HwCache<Long, Manager> hwCache) {
+            HwCache<String, Manager> hwCache) {
         this.transactionRunner = transactionRunner;
         this.managerDataTemplate = managerDataTemplate;
         this.hwCache = hwCache;
@@ -32,10 +32,12 @@ public class DbServiceManagerWithCacheImpl implements DBServiceManager {
                 var managerNo = managerDataTemplate.insert(connection, manager);
                 var createdManager = new Manager(managerNo, manager.getLabel(), manager.getParam1());
                 log.info("created manager: {}", createdManager);
+                hwCache.put(String.valueOf(managerNo), createdManager);
                 return createdManager;
             }
             managerDataTemplate.update(connection, manager);
             log.info("updated manager: {}", manager);
+            hwCache.put(String.valueOf(manager.getNo()), manager);
             return manager;
         });
     }
@@ -43,14 +45,14 @@ public class DbServiceManagerWithCacheImpl implements DBServiceManager {
     @Override
     public Optional<Manager> getManager(long no) {
         return transactionRunner.doInTransaction(connection -> {
-            var managerOptional = Optional.ofNullable(hwCache.get(no));
+            var managerOptional = Optional.ofNullable(hwCache.get(String.valueOf(no)));
             if (managerOptional.isPresent()) {
                 return managerOptional;
             }
 
             managerOptional = managerDataTemplate.findById(connection, no);
             log.info("manager: {}", managerOptional);
-            managerOptional.ifPresent(entity -> hwCache.put(no, entity));
+            managerOptional.ifPresent(entity -> hwCache.put(String.valueOf(no), entity));
             return managerOptional;
         });
     }

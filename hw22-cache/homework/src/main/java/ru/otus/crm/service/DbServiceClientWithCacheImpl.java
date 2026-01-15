@@ -14,10 +14,10 @@ public class DbServiceClientWithCacheImpl implements DBServiceClient {
 
     private final DataTemplate<Client> dataTemplate;
     private final TransactionRunner transactionRunner;
-    private final HwCache<Long, Client> hwCache;
+    private final HwCache<String, Client> hwCache;
 
     public DbServiceClientWithCacheImpl(
-            TransactionRunner transactionRunner, DataTemplate<Client> dataTemplate, HwCache<Long, Client> hwCache) {
+            TransactionRunner transactionRunner, DataTemplate<Client> dataTemplate, HwCache<String, Client> hwCache) {
         this.transactionRunner = transactionRunner;
         this.dataTemplate = dataTemplate;
         this.hwCache = hwCache;
@@ -30,10 +30,12 @@ public class DbServiceClientWithCacheImpl implements DBServiceClient {
                 var clientId = dataTemplate.insert(connection, client);
                 var createdClient = new Client(clientId, client.getName());
                 log.info("created client: {}", createdClient);
+                hwCache.put(String.valueOf(clientId), createdClient);
                 return createdClient;
             }
             dataTemplate.update(connection, client);
             log.info("updated client: {}", client);
+            hwCache.put(String.valueOf(client.getId()), client);
             return client;
         });
     }
@@ -41,14 +43,14 @@ public class DbServiceClientWithCacheImpl implements DBServiceClient {
     @Override
     public Optional<Client> getClient(long id) {
         return transactionRunner.doInTransaction(connection -> {
-            var clientOptional = Optional.ofNullable(hwCache.get(id));
+            var clientOptional = Optional.ofNullable(hwCache.get(String.valueOf(id)));
             if (clientOptional.isPresent()) {
                 return clientOptional;
             }
 
             clientOptional = dataTemplate.findById(connection, id);
             log.info("client: {}", clientOptional);
-            clientOptional.ifPresent(entity -> hwCache.put(id, entity));
+            clientOptional.ifPresent(entity -> hwCache.put(String.valueOf(id), entity));
             return clientOptional;
         });
     }

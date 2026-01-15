@@ -5,11 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MyCache<K, V> implements HwCache<K, V> {
 
+    private static final Logger log = LoggerFactory.getLogger(MyCache.class);
+
     Map<K, V> cache = new WeakHashMap<>();
-    List<HwListener<K, V>> listeners = new ArrayList<>();
+    private final List<HwListener<K, V>> listeners = new ArrayList<>();
 
     @Override
     public void put(K key, V value) {
@@ -41,7 +45,13 @@ public class MyCache<K, V> implements HwCache<K, V> {
     }
 
     private void notifyAll(K key, V value, String action) {
-        listeners.forEach(listener -> listener.notify(key, value, action));
+        listeners.forEach(listener -> {
+            try {
+                listener.notify(key, value, action);
+            } catch (Exception e) {
+                log.error(e.getLocalizedMessage(), e);
+            }
+        });
     }
 
     @RequiredArgsConstructor
