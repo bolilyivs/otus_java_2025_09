@@ -84,7 +84,10 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
         List<Object> parameters = Arrays.stream(method.getParameters())
                 .map(this::findAppComponentFromParameter)
                 .toList();
-        Object instance = method.invoke(appComponentMeta.configObject(), parameters.toArray());
+
+        MethodHandle methodHandle = publicLookup.unreflect(method);
+        methodHandle = methodHandle.bindTo(appComponentMeta.configObject());
+        Object instance = methodHandle.invokeWithArguments(parameters);
         appComponents.add(instance);
         appComponentsByName.put(appComponentMeta.name(), instance);
     }
