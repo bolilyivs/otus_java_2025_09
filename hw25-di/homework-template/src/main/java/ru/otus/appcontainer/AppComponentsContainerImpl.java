@@ -93,11 +93,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
     }
 
     private Object findAppComponentFromParameter(Parameter parameter) {
-        Object component = getAppComponent(parameter.getName());
-        if (Objects.nonNull(component)) {
-            return component;
-        }
-        return getAppComponent(parameter.getClass());
+        return getAppComponent(parameter.getType());
     }
 
     @Override
