@@ -1,5 +1,10 @@
 package ru.otus.services.processors;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.otus.api.SensorDataProcessor;
@@ -14,23 +19,29 @@ public class SensorDataProcessorBuffered implements SensorDataProcessor {
     private final int bufferSize;
     private final SensorDataBufferedWriter writer;
 
+    private final BlockingQueue<SensorData> dataBuffer;
+
     public SensorDataProcessorBuffered(int bufferSize, SensorDataBufferedWriter writer) {
         this.bufferSize = bufferSize;
         this.writer = writer;
+        this.dataBuffer = new PriorityBlockingQueue<>(bufferSize, Comparator.comparing(SensorData::getMeasurementTime));
     }
 
     @Override
     public void process(SensorData data) {
-        /*
-            if (dataBuffer.size() >= bufferSize) {
-                flush();
-            }
-        */
+        this.dataBuffer.add(data);
+        if (dataBuffer.size() >= bufferSize) {
+            flush();
+        }
     }
 
     public void flush() {
         try {
-            // writer.writeBufferedData(bufferedData);
+            List<SensorData> data = new ArrayList<>(dataBuffer.size());
+            dataBuffer.drainTo(data);
+            if (!data.isEmpty()) {
+                writer.writeBufferedData(data);
+            }
         } catch (Exception e) {
             log.error("Ошибка в процессе записи буфера", e);
         }
