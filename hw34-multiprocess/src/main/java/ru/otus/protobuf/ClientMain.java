@@ -27,23 +27,24 @@ public class ClientMain {
     private static final long SERVER_VALUE_RESET = 0L;
     private static final int COUNT_DOWN_LATCH_COUNT = 1;
 
-    private static final AtomicLong serverValue = new AtomicLong(0);
-
     @SneakyThrows
     public static void main(String[] args) {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger("io").setLevel(Level.OFF);
+
+        AtomicLong serverValue = new AtomicLong(0);
 
         var channel = ManagedChannelBuilder.forAddress(SERVER_HOST, SERVER_PORT)
                 .usePlaintext()
                 .build();
         var stub = RemoteMessageServiceGrpc.newStub(channel);
         var latch = new CountDownLatch(COUNT_DOWN_LATCH_COUNT);
-        CompletableFuture.runAsync(() -> stub.send(createRequest(FIRST_VALUE, LAST_VALUE), new MessageObserver(latch)));
+        CompletableFuture.runAsync(
+                () -> stub.send(createRequest(FIRST_VALUE, LAST_VALUE), new MessageObserver(latch, serverValue)));
 
         long currentValue = VALUE_INIT;
         for (int i = LOOP_START_VALUE; i < LOOP_END_VALUE; i++) {
-            currentValue += getServerValue() + VALUE_INC;
+            currentValue += serverValue.getAndSet(SERVER_VALUE_RESET) + VALUE_INC;
             log.info("Current value: {}", currentValue);
             Thread.sleep(SLEEP_MS);
         }
@@ -59,15 +60,12 @@ public class ClientMain {
                 .build();
     }
 
-    private static long getServerValue() {
-        return serverValue.getAndSet(SERVER_VALUE_RESET);
-    }
-
     @Slf4j
     @RequiredArgsConstructor
     private static class MessageObserver implements StreamObserver<RemoteMessageServiceOuterClass.MessageResponse> {
 
         private final CountDownLatch latch;
+        private final AtomicLong serverValue;
 
         @Override
         public void onNext(RemoteMessageServiceOuterClass.MessageResponse messageResponse) {
