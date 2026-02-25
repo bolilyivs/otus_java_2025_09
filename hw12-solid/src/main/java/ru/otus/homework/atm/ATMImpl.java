@@ -1,12 +1,13 @@
 package ru.otus.homework.atm;
 
-import java.util.HashMap;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import ru.otus.homework.atm.store.Cash;
 import ru.otus.homework.atm.store.balance.Balance;
 import ru.otus.homework.atm.store.balance.BalanceImpl;
 import ru.otus.homework.atm.store.balance.ControlledBalance;
+
+import java.util.HashMap;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ATMImpl implements ATM {
@@ -34,7 +35,7 @@ public class ATMImpl implements ATM {
         while (sum > 0) {
             Cash cash = sourceBalance.getMaxBanknoteCashUpTo(sum);
             if (Objects.isNull(cash)) {
-                throw new IllegalArgumentException("Нет нужной банкноты!");
+                throw new IllegalArgumentException(String.format("Нет нужной банкноты для %s!", sum));
             }
             Cash subCash = Cash.of(cash.getDenomination(), Math.min(sum / cash.getDenomination(), cash.amount()));
 
