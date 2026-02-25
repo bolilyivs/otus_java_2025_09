@@ -1,5 +1,5 @@
 package ru.otus.homework.atm.store;
 
-public interface Copy<T> {
+public interface Copyable<T> {
     T copy();
 }

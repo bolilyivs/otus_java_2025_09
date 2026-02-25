@@ -1,11 +1,12 @@
 package ru.otus.homework.atm.store.balance;
 
-import java.util.Set;
 import ru.otus.homework.atm.store.Banknote;
 import ru.otus.homework.atm.store.Cash;
-import ru.otus.homework.atm.store.Copy;
+import ru.otus.homework.atm.store.Copyable;
 
-public interface Balance extends Copy<Balance> {
+import java.util.Set;
+
+public interface Balance extends Copyable<Balance> {
     Set<Banknote> getBanknotes();
 
     long getSum();
