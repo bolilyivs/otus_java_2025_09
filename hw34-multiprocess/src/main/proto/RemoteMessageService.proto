@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package ru.otus.protobuf;
+
+message MessageRequest {
+  int64 firstValue = 1;
+  int64 lastValue = 2;
+}
+
+message MessageResponse {
+  int64 value = 1;
+}
+
+service RemoteMessageService {
+  rpc send(MessageRequest) returns (stream MessageResponse);
+}
