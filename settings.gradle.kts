@@ -4,6 +4,8 @@ include("hw04-generics")
 include("hw06-annotations")
 include("hw08-gc")
 include("hw10-byteCodes")
+include("hw38-webflux-chat:client-service")
+include("hw38-webflux-chat:datastore-service")
 
 pluginManagement {
     val jgitver: String by settings
