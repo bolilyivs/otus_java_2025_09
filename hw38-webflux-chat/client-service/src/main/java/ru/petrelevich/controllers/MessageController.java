@@ -19,6 +19,7 @@ import ru.petrelevich.domain.Message;
 
 @Controller
 public class MessageController {
+    private static final String SPEC_ROOM = "1408";
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
     private static final String TOPIC_TEMPLATE = "/topic/response.";
@@ -35,7 +36,9 @@ public class MessageController {
     public void getMessage(@DestinationVariable("roomId") String roomId, Message message) {
         logger.info("get message:{}, roomId:{}", message, roomId);
         saveMessage(roomId, message).subscribe(msgId -> logger.info("message send id:{}", msgId));
-
+        if (SPEC_ROOM.equals(roomId)) {
+            throw new IllegalArgumentException("Специальная комната не предназначена для добавления сообщений");
+        }
         template.convertAndSend(
                 String.format("%s%s", TOPIC_TEMPLATE, roomId), new Message(HtmlUtils.htmlEscape(message.messageStr())));
     }

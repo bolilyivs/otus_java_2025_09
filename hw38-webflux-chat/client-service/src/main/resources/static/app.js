@@ -3,6 +3,8 @@ let stompClient = null;
 const chatLineElementId = "chatLine";
 const roomIdElementId = "roomId";
 const messageElementId = "message";
+const sendPanelElementId = "sendPanel";
+const SPEC_ROOM = "1408";
 
 
 const setConnected = (connected) => {
@@ -13,6 +15,7 @@ const setConnected = (connected) => {
     disconnectBtn.disabled = !connected;
     const chatLine = document.getElementById(chatLineElementId);
     chatLine.hidden = !connected;
+    chatLine.innerHTML = ''
 }
 
 const connect = () => {
@@ -21,6 +24,13 @@ const connect = () => {
         setConnected(true);
         const userName = frame.headers["user-name"];
         const roomId = document.getElementById(roomIdElementId).value;
+
+        if (roomId === SPEC_ROOM) {
+            document.getElementById(sendPanelElementId).hidden = true;
+        } else {
+            document.getElementById(sendPanelElementId).hidden = false;
+        }
+
         console.log(`Connected to roomId: ${roomId} frame:${frame}`);
         const topicName = `/topic/response.${roomId}`;
         const topicNameUser = `/user/${userName}${topicName}`;

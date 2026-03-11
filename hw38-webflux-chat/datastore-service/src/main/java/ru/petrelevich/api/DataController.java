@@ -3,11 +3,7 @@ package ru.petrelevich.api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -17,6 +13,7 @@ import ru.petrelevich.service.DataStore;
 
 @RestController
 public class DataController {
+    private static final String SPEC_ROOM = "1408";
     private static final Logger log = LoggerFactory.getLogger(DataController.class);
     private final DataStore dataStore;
     private final Scheduler workerPool;
@@ -28,6 +25,10 @@ public class DataController {
 
     @PostMapping(value = "/msg/{roomId}")
     public Mono<Long> messageFromChat(@PathVariable("roomId") String roomId, @RequestBody MessageDto messageDto) {
+        if (SPEC_ROOM.equals(roomId)) {
+            throw new IllegalArgumentException("Специальная комната не предназначена для добавления сообщений");
+        }
+
         var messageStr = messageDto.messageStr();
 
         var msgId = Mono.just(new Message(null, roomId, messageStr))
@@ -46,9 +47,16 @@ public class DataController {
     public Flux<MessageDto> getMessagesByRoomId(@PathVariable("roomId") String roomId) {
         return Mono.just(roomId)
                 .doOnNext(room -> log.info("getMessagesByRoomId, room:{}", room))
-                .flatMapMany(dataStore::loadMessages)
+                .flatMapMany(this::messageDispatch)
                 .map(message -> new MessageDto(message.msgText()))
                 .doOnNext(msgDto -> log.info("msgDto:{}", msgDto))
                 .subscribeOn(workerPool);
+    }
+
+    private Flux<Message> messageDispatch(String roomId) {
+        if (SPEC_ROOM.equals(roomId)) {
+            return dataStore.loadAllMessages();
+        }
+        return dataStore.loadMessages(roomId);
     }
 }
