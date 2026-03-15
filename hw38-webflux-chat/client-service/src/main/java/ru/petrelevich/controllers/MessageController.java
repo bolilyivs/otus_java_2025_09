@@ -19,8 +19,9 @@ import ru.petrelevich.domain.Message;
 
 @Controller
 public class MessageController {
-    private static final String SPEC_ROOM = "1408";
+    private static final long SPEC_ROOM = 1408L;
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
+    private static final String ALL_MESSAGES_PATH = "/msg/all";
 
     private static final String TOPIC_TEMPLATE = "/topic/response.";
 
@@ -34,11 +35,12 @@ public class MessageController {
 
     @MessageMapping("/message.{roomId}")
     public void getMessage(@DestinationVariable("roomId") String roomId, Message message) {
+        if (String.valueOf(SPEC_ROOM).equals(roomId)) {
+            logger.error("Специальная комната не предназначена для добавления сообщений");
+            return;
+        }
         logger.info("get message:{}, roomId:{}", message, roomId);
         saveMessage(roomId, message).subscribe(msgId -> logger.info("message send id:{}", msgId));
-        if (SPEC_ROOM.equals(roomId)) {
-            throw new IllegalArgumentException("Специальная комната не предназначена для добавления сообщений");
-        }
         template.convertAndSend(
                 String.format("%s%s", TOPIC_TEMPLATE, roomId), new Message(HtmlUtils.htmlEscape(message.messageStr())));
     }
@@ -62,8 +64,9 @@ public class MessageController {
         }
         logger.info("subscription for:{}, roomId:{}, user:{}", simpDestination, roomId, principal.getName());
         // /user/f6532733-51db-4d0e-bd00-1267dddc7b21/topic/response.1
-        getMessagesByRoomId(roomId)
-                .doOnError(ex -> logger.error("getting messages for roomId:{} failed", roomId, ex))
+
+        Flux<Message> messages = SPEC_ROOM == roomId ? getAllMessages() : getMessagesByRoomId(roomId);
+        messages.doOnError(ex -> logger.error("getting messages for roomId:{} failed", roomId, ex))
                 .subscribe(message -> template.convertAndSendToUser(principal.getName(), simpDestination, message));
     }
 
@@ -90,6 +93,20 @@ public class MessageController {
         return datastoreClient
                 .get()
                 .uri(String.format("/msg/%s", roomId))
+                .accept(MediaType.APPLICATION_NDJSON)
+                .exchangeToFlux(response -> {
+                    if (response.statusCode().equals(HttpStatus.OK)) {
+                        return response.bodyToFlux(Message.class);
+                    } else {
+                        return response.createException().flatMapMany(Mono::error);
+                    }
+                });
+    }
+
+    private Flux<Message> getAllMessages() {
+        return datastoreClient
+                .get()
+                .uri(ALL_MESSAGES_PATH)
                 .accept(MediaType.APPLICATION_NDJSON)
                 .exchangeToFlux(response -> {
                     if (response.statusCode().equals(HttpStatus.OK)) {
